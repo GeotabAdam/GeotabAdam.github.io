@@ -636,9 +636,10 @@ document.addEventListener("DOMContentLoaded", function () {
         createDatabase(formValues)
             .then(getUser)
             .then(uploadConfigFile)
+            .then(importConfig)
             .then(createClearance)
             .then(setUserDefaults)
-            .then(importConfig)
+            //.then(importConfig)
             .then(logout)
             .then(redirect)
             .catch(error);
