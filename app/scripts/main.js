@@ -789,25 +789,12 @@ document.addEventListener("DOMContentLoaded", function () {
             
             //Checks if database config was really imported 
 
-<<<<<<< HEAD
+
             
 
          }
 
         });
-=======
-        createDatabase(formValues)
-            .then(getUser)
-            .then(uploadConfigFile)
-            .then(importConfig)
-            .then(createClearance)
-            .then(setUserDefaults)
-            //.then(importConfig)
-            .then(logout)
-            .then(redirect)
-            .catch(error);
-    });
->>>>>>> 2a87392181d3814618121eeeef86fa285ec8a995
 
     // Setup the form fields that need to request data from the API
     //renderCaptcha();
