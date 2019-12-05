@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", function () {
             ]
         },
         host = CONFIG.defaultHost,
-        
         // local - helps create local options based on selected time zone. See app/scripts/local.js.
         local = geotab.local,
         // call - helps make calls to MyGeotab API
@@ -38,7 +37,10 @@ document.addEventListener("DOMContentLoaded", function () {
         elLoading = document.querySelector("#loading"),
         elWaiting = document.querySelector("#waiting"),
 
-        elCompanyName = document.querySelector("#companyName"),
+        //elCompanyName = document.querySelector("#companyName"),
+        elTestStuff=document.querySelector('#mtool-io-left-box'),
+
+
         elRegistrationServerText = document.querySelector("#registrationServer"),
         elDatabaseNameText = document.querySelector("#databaseNameText"),
         elDatabaseName = document.querySelector("#databaseName"),
@@ -157,22 +159,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
             return String.fromCharCode.apply(this, companyNameCharacters);
         },
+        
+        //Checks is Database name is taken creates a window alert to inform user about taken database
+        checkDataBaseName=function(databaseName1){
+
+            var val1=call(host,"DatabaseExists",{database:databaseName1});
+
+            var val2=val1.then(function(value){
+                if (value===true){
+                    window.alert("Database Name "+ databaseName1 +" is taken");
+                }
+            });
+
+        },
+        
 
         // So we can clear the timeout if user is still typing
-        checkAvailabilityTimeout,
+        
+        
+        //checkAvailabilityTimeout,
 
         /**
          * Check to see if the database name exists
          * @param databaseName {string} - the database name
          */
-        checkAvailability = function (databaseName) {
+        
+        /*
+         checkAvailability = function (databaseName) {
+            
             elDatabaseNameText.parentNode.querySelector(".help-block").style.display = "none";
             changeValidationState(elDatabaseNameText.parentNode, validationState.none);
+            
             if (!databaseName) {
+                
                 elWaiting.style.display = "none";
-                return;
+                return 'NULL';
             }
             elWaiting.style.display = "block";
+
             if (checkAvailabilityTimeout) {
                 clearTimeout(checkAvailabilityTimeout);
             }
@@ -189,7 +213,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         changeValidationState(elRegistrationServerText.parentNode, validationState.error);
                     });
             }, 600);
-        },
+        },*/
+        
 
         /**
          * Update the displayed short database name and check if it's availability
@@ -207,6 +232,8 @@ document.addEventListener("DOMContentLoaded", function () {
         /**
          * Get a list of IANA time zones form the server and add to time zone select input
          */
+
+        /*
         renderTimeZones = function () {
             call(host, "GetTimeZones")
                 .then(function (timeZones) {
@@ -219,9 +246,52 @@ document.addEventListener("DOMContentLoaded", function () {
                             return "<option value=\"" + timeZone.id + "\">" + timeZone.id + "</option>";
                         });
                 }, showError);
-        },
+        },*/
 
         getFormValues = function () {
+            
+            var database_names=elTestStuff.value.split("\n");
+            var form_outputs=[database_names.length-1];
+
+            if (database_names.length===0){
+                return 'NULL'
+            }
+            
+
+            for(var i=0;i<database_names.length;i++){
+                
+                //var val1=checkAvailability('hello');
+                //console.log(val1);
+                var ret_obj=
+                {
+                    database: database_names[i],
+                    userName: elEmail.value,
+                    password: elPassword.value,
+                    welcomeText: "Welcome to ABC Fleets",
+                    language: "en",
+                    companyDetails: {
+                        companyName: database_names[i],
+                        firstName: elFirstName.value,
+                        lastName: elLastName.value,
+                        phoneNumber: elPhoneNumber.value,
+                        resellerName: "ABC Fleets",
+                        fleetSize: parseInt(elFleetSize.value, 10) || 0,
+                        comments: "",
+                        signUpForNews: elUpdates.checked,
+                        timeZoneId: "America/Chicago"
+                    }
+                };
+
+                form_outputs[i]=ret_obj;
+            }
+
+            //Check for duplicate databases and existing database names: 
+
+            
+
+        
+            return form_outputs;
+            /*
             return {
                 database: elDatabaseName.value,
                 userName: elEmail.value,
@@ -239,7 +309,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     signUpForNews: elUpdates.checked,
                     timeZoneId: elTimeZone.value
                 }
-            };
+            };*/
         },
 
         // Validation
@@ -269,38 +339,49 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 600);
         },
 
+
+
         /**
          * Validate form values
          * @param values {object} - the for values as retrieved by getFormValues
          * @returns {boolean}
          */
+
         isFormValid = function (values) {
             var isValid = true;
-            if (!values.companyDetails.companyName) {
+
+
+           /* if (!values.companyDetails.companyName) {
                 isValid = false;
                 changeValidationState(elCompanyName.parentNode, validationState.error);
-            }
-            if (!values.database) {
+            }*/
+            /*if (!values.database) {
                 isValid = false;
                 changeValidationState(elDatabaseNameText.parentNode, validationState.error);
+            }*/
+            
+            for (var i=0;i<values.length;i++){
+
+                if (!values[i].userName || !isValidEmail(values[i].userName)) {
+                    isValid = false;
+                    changeValidationState(elEmail.parentNode, validationState.error);
+                }
+                if (!values[i].companyDetails.firstName) {
+                    isValid = false;
+                    changeValidationState(elFirstName.parentNode, validationState.error);
+                }
+                if (!values[i].companyDetails.lastName) {
+                    isValid = false;
+                    changeValidationState(elLastName.parentNode, validationState.error);
+                }
+                if (!values[i].password) {
+                    isValid = false;
+                    changeValidationState(elPassword.parentNode, validationState.error);
+                }
+                return isValid;
             }
-            if (!values.userName || !isValidEmail(values.userName)) {
-                isValid = false;
-                changeValidationState(elEmail.parentNode, validationState.error);
-            }
-            if (!values.companyDetails.firstName) {
-                isValid = false;
-                changeValidationState(elFirstName.parentNode, validationState.error);
-            }
-            if (!values.companyDetails.lastName) {
-                isValid = false;
-                changeValidationState(elLastName.parentNode, validationState.error);
-            }
-            if (!values.password) {
-                isValid = false;
-                changeValidationState(elPassword.parentNode, validationState.error);
-            }
-            return isValid;
+
+            
         },
 
         // Registration process
@@ -310,10 +391,13 @@ document.addEventListener("DOMContentLoaded", function () {
          * @returns {object} - the database, user and password
          */
         createDatabase = function (params) {
+            console.log('test1');
             if (CONFIG.debug) {
+                console.log('test2');
                 return createDebugDatabase(params);
             }
             var processResult = function (results) {
+                console.log('test3');
                 var path = results.path === "ThisServer" ? host : results.path;
                 console.log(path)
                 return {
@@ -322,6 +406,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     credentials: results.credentials
                 };
             };
+            console.log(params);
             return call(host, "CreateDatabase2", params).then(processResult);
         },
 
@@ -352,12 +437,17 @@ document.addEventListener("DOMContentLoaded", function () {
          * @returns {object} - options with user
          */
         getUser = function (options) {
+
+            console.log("options credentials: " +  options.credentials);
+            console.log("options username: "+ options.credentials.userName);
+
             return call(options.server, "Get", {
                 credentials: options.credentials,
                 typeName: "User",
                 search: {
                     name: options.credentials.userName
                 }
+                
             }).then(function (results) {
                 options.user = results[0];
                 return options;
@@ -408,7 +498,7 @@ document.addEventListener("DOMContentLoaded", function () {
          * @param options {object}
          * @returns {object} - options
          */
-        setUserDefaults = function (options) {
+        /*setUserDefaults = function (options) {
             var timeZone = elTimeZone.value,
                 continent = local.getContinentByTimeZone(timeZone),
                 user = options.user;
@@ -430,13 +520,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 // pass on the options to the next promise
                 return options;
             });
-        },
+        },*/
 
         /**
          * Upload config file
          * @param options {object}
          * @returns {object} - options
          */
+
         uploadConfigFile = function (options) {
 
             return new Promise(function (resolve, reject) {
@@ -460,6 +551,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         content = JSON.parse(contentString);
                     } catch(e) {
                         reject({message: "Invalid imported file's content. File's content can't be converted to a valid JSON object."});
+                        window.alert('Error: File could not be imported');
                     }
 
                     options.importedConfig = content;
@@ -521,12 +613,14 @@ document.addEventListener("DOMContentLoaded", function () {
          */
         redirect = function (options) {
             // use rison to encode token and add to url
-            var token = rison.encode_object({"token": options.credentials});
+           var token = rison.encode_object({"token": options.credentials});
             window.location = "https://" + options.server + "/" + options.credentials.database + "#" + token;
+            //location.reload();
         };
 
     elRegistrationServerText.value = host;
-
+    
+    
     if (CONFIG.debug) {
         elCompanyName.value = "qqq";
         elDatabaseNameText.value = "qqq";
@@ -542,28 +636,37 @@ document.addEventListener("DOMContentLoaded", function () {
         elConfirmPassword.value = "qqq";
     }
 
+
     // Wire up events
     /**
      * Watch the company name, generate the short database name from it and check it's availability
      */
-    elCompanyName.addEventListener("keyup", function () {
-        var splitCompanyName = elCompanyName.value.split(/\s+/);
-        var databaseName = splitCompanyName.length ? splitCompanyName[0] : "";
-        elDatabaseNameText.value = databaseName;
-        elDatabaseName.value = databaseName;
-        updateShortDatabase(databaseName);
-    }, false);
+   
+
+    elTestStuff.addEventListener("blur",function(){
+
+        var form_vals=getFormValues();
+        console.log(form_vals)
+        console.log(form_vals.length);
+        
+        for (var i=0;i<form_vals.length;i++){
+            console.log(i);
+            var val31=checkDataBaseName(form_vals[i]['database']);
+            console.log(val31);
+        }
+
+    });
 
     /**
      * Watch the database name and check it's availability
      */
-    elDatabaseNameText.addEventListener("keyup", function () {
+    /*elDatabaseNameText.addEventListener("keyup", function () {
         updateShortDatabase(elDatabaseNameText.value);
-    });
+    });*/
 
     elRegistrationServerText.addEventListener("blur", function () {
         host = elRegistrationServerText.value;
-        updateShortDatabase(elDatabaseNameText.value);
+        //updateShortDatabase(elDatabaseNameText.value);
     });
 
     /**
@@ -574,6 +677,7 @@ document.addEventListener("DOMContentLoaded", function () {
             validatePassword();
         }
     });
+    
 
     /**
      * Watch the password conformation and check it's validity
@@ -613,8 +717,9 @@ document.addEventListener("DOMContentLoaded", function () {
      */
     elSubmit.addEventListener("click", function (evt) {
         var formValues;
-        console.log('hello')
+        //console.log('hello')
         var error = function (error) {
+            //window.alert('Error')
             hideLoading();
 
         };
@@ -626,25 +731,74 @@ document.addEventListener("DOMContentLoaded", function () {
         hideError();
         formValues = getFormValues();
 
+
         if (!isFormValid(formValues)) {
             elSubmit.removeAttribute("disabled");
+            window.alert("Please fill all values properly");
             return;
         }
 
         showLoading();
+        
+        for (var i=0;i<formValues.length;i++){
 
-        createDatabase(formValues)
-            .then(getUser)
-            .then(uploadConfigFile)
-            .then(createClearance)
-            .then(setUserDefaults)
-            .then(importConfig)
-            .then(logout)
-            .then(redirect)
-            .catch(error);
-    });
+            console.log(formValues[i])
+            
+            if(i<formValues.length-2){
+                createDatabase(formValues[i])
+                    .then(getUser)
+                    .then(uploadConfigFile)
+                    .then(importConfig)
+                    .then(createClearance)
+                    //.then(setUserDefaults)
+                    //.then(importConfig)
+                    .catch(error)
+                    .then(logout)
+                    .catch(error)
+                    //.then(redirect)
+                // .catch(error);
+            }
+            else{
+                createDatabase(formValues[i])
+                    .then(getUser)
+                    .then(uploadConfigFile)
+                    .then(importConfig)
+                    .then(createClearance)
+                    //.then(setUserDefaults)
+                    //.then(importConfig)
+                    .catch(error)
+                    .then(logout)
+                    .catch(error)
+                    .then(function(value){
+                        window.alert("Database creation has been completed");
+                    })
+                    .then(redirect)
+                    .catch(error);
+                    
+            }
+            
+            //Checks if database was really created
+            var check_db=call(host,"DatabaseExists",{database:formValues[i]["database"]});
+            check_db.then(function(value){
+                if(value===false){
+                    window.alert("Database"+formValues[i]["database"]+"was not created")
+                }
+            });
+            
+            //Checks if database config was really imported 
+
+            
+
+         }
+
+        });
 
     // Setup the form fields that need to request data from the API
     //renderCaptcha();
-    renderTimeZones();
+    //renderTimeZones();
 });
+
+
+
+
+
