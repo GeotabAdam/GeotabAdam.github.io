@@ -780,12 +780,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             
             //Checks if database was really created
-            var check_db=call(host,"DatabaseExists",{database:formValues[i]["database"]});
-            check_db.then(function(value){
-                if(value===false){
-                    window.alert("Database"+formValues[i]["database"]+"was not created");
-                }
-            });
+
             
             //Checks if database config was really imported 
 
