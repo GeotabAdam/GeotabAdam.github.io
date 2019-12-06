@@ -783,31 +783,17 @@ document.addEventListener("DOMContentLoaded", function () {
             var check_db=call(host,"DatabaseExists",{database:formValues[i]["database"]});
             check_db.then(function(value){
                 if(value===false){
-                    window.alert("Database"+formValues[i]["database"]+"was not created")
+                    window.alert("Database"+formValues[i]["database"]+"was not created");
                 }
             });
             
             //Checks if database config was really imported 
 
-<<<<<<< HEAD
             
 
          }
 
         });
-=======
-        createDatabase(formValues)
-            .then(getUser)
-            .then(uploadConfigFile)
-            .then(importConfig)
-            .then(createClearance)
-            .then(setUserDefaults)
-            //.then(importConfig)
-            .then(logout)
-            .then(redirect)
-            .catch(error);
-    });
->>>>>>> 2a87392181d3814618121eeeef86fa285ec8a995
 
     // Setup the form fields that need to request data from the API
     //renderCaptcha();
